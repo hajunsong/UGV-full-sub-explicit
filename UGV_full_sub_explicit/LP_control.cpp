@@ -25,8 +25,8 @@ void UnmannedGroundVehicle::LP_control() {
 	double I_z = 13201;             // total moment of inertia of z - axis(kgm ^ 2)
 	double tire_radius = tire->PNU_get_unloaded_radius();	// 타이어 반지름
 	double torque_limit = 3416;		//[Nm], 기어비: 17.08 기준
-	//double torque_limit = 10000;
-	////////// 지역 변수 //////////
+									//double torque_limit = 10000;
+									////////// 지역 변수 //////////
 	int i, j;						// 반복문에 사용하기 위한 변수
 	int indx[4] = { 0 };			// lusolve4 (LU decomponent) 함수에서 사용하기 위한 변수
 	double M_fac[4][4] = { 0 };		// lusolve4 (LU decomponent) 함수에서 사용하기 위한 변수
@@ -54,7 +54,7 @@ void UnmannedGroundVehicle::LP_control() {
 	double x_pv, y_pv, yaw_wp_pv; // preview distance에 의한 지향점 좌표(x_pv, y_pv) 및 차량 무게중심으로부터의 지향 각
 	double de_psi;	// 지향각속도 오차 (desired yaw_rate - current yaw_rate)
 
-	// 속도 및 지향각 제어 게인
+					// 속도 및 지향각 제어 게인
 	K_vp = 10;
 	K_vi = 0;
 	K_yd = 10;
@@ -92,7 +92,7 @@ void UnmannedGroundVehicle::LP_control() {
 	F_x[4] = sus[LR].Fx;		// LR (Left, Right)
 	F_x[5] = sus[RR].Fx;		// RR (Right, Rear)
 
-	// 타이어력 분배에 사용되는 weight factor	정의
+								// 타이어력 분배에 사용되는 weight factor	정의
 	W1 = 1; W2 = 1; W3 = 1; W4 = 1; W5 = 1; W6 = 1;
 
 	// 외란 요 모멘트 관측기 게인
@@ -112,14 +112,12 @@ void UnmannedGroundVehicle::LP_control() {
 	////////// Section 1. 지향 점 계산 ////////// 
 	////////// Input: 차량 현재 위치 (x_c, y_c), Waypoint data (WP)
 	////////// Output: 지향각 명령 (yaw_d)
-	if (simulation_flag == 2) {										// 병렬 주행 (RTT) 모드인 경우에만 계산 (Equilibrium 모드에서는 계산 안함)
-		
-		//ctrl->yaw_d = atan2((y_pv - y_c), (x_pv - x_c));    // 차량 무게중심으로부터 지향점(preview point)까지의 벡터의 방향을 지향각 명령(desired yaw angle)로 계산한다.
 
-		//// 		for (i = 0; i < 4; i++) {
-		//// 			WP_previous[i] = WP[ctrl->WP_indx - 1][i][sim->thread_indx];			// 현재 차량이 소속된 좌표인 WP_previous에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
-		//// 			WP_next[i] = WP[ctrl->WP_indx][i][sim->thread_indx];				// 현재 좌표의 다음 좌표인 WP_next에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
-		//// 		}
+	if (simulation_flag == 2) {										// 병렬 주행 (RTT) 모드인 경우에만 계산 (Equilibrium 모드에서는 계산 안함)
+		// 		for (i = 0; i < 4; i++) {
+		// 			WP_previous[i] = WP[ctrl->WP_indx - 1][i][sim->thread_indx];			// 현재 차량이 소속된 좌표인 WP_previous에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
+		// 			WP_next[i] = WP[ctrl->WP_indx][i][sim->thread_indx];				// 현재 좌표의 다음 좌표인 WP_next에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
+		// 		}
 		WP_previous[0] = input->LocalPath[ctrl->WP_indx - 1][0];
 		WP_previous[1] = input->LocalPath[ctrl->WP_indx - 1][1];
 		//WP_previous[2] = VehicleVelocity[ctrl->WP_indx - 1];
@@ -146,11 +144,11 @@ void UnmannedGroundVehicle::LP_control() {
 			ctrl->WP_indx++;												// WP_previous과 WP_next 좌표를 새로 업데이트하기 위해 WP_indx를 +1 시킨다.
 			ctrl->WP_indx_update_flag = 1;									// WP_indx가 업데이트 된 경우 LP_stability_metric()가 실행됐을 때 stability indx 항목을 1로 초기화 시켜준다.
 
-			// waypoint 새로 할당
-			// 			for (i = 0; i < 4; i++) {
-			// 				WP_previous[i] = WP[ctrl->WP_indx - 1][i][sim->thread_indx];		// 현재 차량이 소속된 좌표인 WP_previous에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
-			// 				WP_next[i] = WP[ctrl->WP_indx][i][sim->thread_indx];			// 현재 차량이 소속된 좌표인 WP_next에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
-			// 			}
+																			// waypoint 새로 할당
+																			// 			for (i = 0; i < 4; i++) {
+																			// 				WP_previous[i] = WP[ctrl->WP_indx - 1][i][sim->thread_indx];		// 현재 차량이 소속된 좌표인 WP_previous에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
+																			// 				WP_next[i] = WP[ctrl->WP_indx][i][sim->thread_indx];			// 현재 차량이 소속된 좌표인 WP_next에 waypoint의 X, Y 좌표와 주행 속도 명령 그리고 stability indx = 0 할당
+																			// 			}
 			WP_previous[0] = input->LocalPath[ctrl->WP_indx - 1][0];
 			WP_previous[1] = input->LocalPath[ctrl->WP_indx - 1][1];
 			//WP_previous[2] = VehicleVelocity[ctrl->WP_indx - 1];
@@ -179,11 +177,11 @@ void UnmannedGroundVehicle::LP_control() {
 		//	ctrl->e_l = sqrt((x_n - x_c)*(x_n - x_c) + (y_n - y_c)*(y_n - y_c)) * 0;
 		//}
 		//a2b3 - a3b2, a3b1 - a1b3, a1b2 - a2b1
-		//double v_car[3] = { x_c - WP_previous[0] , y_c - WP_previous[1] , 0 };
-		//double v_wp[3] = { WP_next[0] - WP_previous[0] , WP_next[1] - WP_previous[1], 0 };
-		//double v_car_wp_cross[3] = { v_car[1] * v_wp[2] - v_car[2] * v_wp[1], v_car[2] * v_wp[0] - v_car[0] * v_wp[2], v_car[0] * v_wp[1] - v_car[1] * v_wp[0] };
+		double v_car[3] = { x_c - WP_previous[0] , y_c - WP_previous[1] , 0 };
+		double v_wp[3] = { WP_next[0] - WP_previous[0] , WP_next[1] - WP_previous[1], 0 };
+		double v_car_wp_cross[3] = { v_car[1] * v_wp[2] - v_car[2] * v_wp[1], v_car[2] * v_wp[0] - v_car[0] * v_wp[2], v_car[0] * v_wp[1] - v_car[1] * v_wp[0] };
 
-		//ctrl->e_l = sqrt((x_n - x_c)*(x_n - x_c) + (y_n - y_c)*(y_n - y_c))*fsign(v_car_wp_cross[2]);
+		ctrl->e_l = sqrt((x_n - x_c)*(x_n - x_c) + (y_n - y_c)*(y_n - y_c))*fsign(v_car_wp_cross[2]);
 
 		// Preview distance
 		if (fabs(ctrl->v_x) > L) {		// Preview distance는 차량 주행 속도에 비례하도록 설정함
@@ -268,7 +266,7 @@ void UnmannedGroundVehicle::LP_control() {
 	ctrl->yaw_hat = ctrl->yaw_hat + T / I_z * ctrl->M_d_hat + T / I_z * M_c_true + T * p*(yaw_rate - ctrl->yaw_hat);	// yaw rate estimate
 	ctrl->M_d_hat = ctrl->M_d_hat + T * eta*(yaw_rate - ctrl->yaw_hat);	// disturbance moment estimate	
 
-	// 지향각 오차 계산
+																		// 지향각 오차 계산
 	if (yaw >= 0) {										// 지향각이 1,2 사분면에 위치한 경우 (양수)
 		if (ctrl->yaw_d < (yaw - M_PI)) {					// 지향각 명령이 (지향각-pi)보다 작은 경우
 			ctrl->e_psi = ctrl->yaw_d + 2 * M_PI - yaw;
@@ -278,7 +276,7 @@ void UnmannedGroundVehicle::LP_control() {
 		}
 	}
 	else {												// 지향각이 3,4 사분면에 위치한 경우 (음수)
-		if (ctrl->yaw_d > (yaw + M_PI)) {					// 지향각 명령이 (지향각+pi)보다 큰 경우
+		if (ctrl->yaw_d >(yaw + M_PI)) {					// 지향각 명령이 (지향각+pi)보다 큰 경우
 			ctrl->e_psi = (ctrl->yaw_d - 2 * M_PI) - yaw;
 		}
 		else {												// 지향각 명령이 (지향각+pi)보다 작은 경우
@@ -387,7 +385,7 @@ void UnmannedGroundVehicle::LP_control() {
 	// 인-휠 모터 토크 명령 계산
 	for (j = 0; j < 6; j++) {
 		ctrl->motor_torque[j] = tire_radius * F_xd[j];		// 모터 토크 명령 = 타이어 반지름 * 종 방향 힘 명령
-		//ctrl->motor_torque[j] = tire_radius*(F_xd[j] + 3*(ctrl->F_x_error_sum[j])/10);		// 종방향 타이어 오차 보상
+															//ctrl->motor_torque[j] = tire_radius*(F_xd[j] + 3*(ctrl->F_x_error_sum[j])/10);		// 종방향 타이어 오차 보상
 
 		if (F_z[j] == 0)
 			ctrl->motor_torque[j] = 0;						// 수직 타이어력이 0 인 경우 모터 토크도 0으로 설정
